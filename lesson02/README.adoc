@@ -34,10 +34,10 @@ image::doc/2.1.dio.png[]
 完成克隆步骤后，就该动手运行您的第一个微服务了。首先，在您的操作系统中打开命令行工具，然后导航到文件系统上克隆示例源码库的位置：
 
 ----
-cd [microservice-security]/chapter02/sample01
+cd [microservice-security]/lesson02/sample01
 ----
 
-在 `chapter02/sample01` 目录中，您将找到与订单处理微服务对应的源代码。在该目录中，执行以下命令以构建订单处理微服务：
+在 `lesson02/sample01` 目录中，您将找到与订单处理微服务对应的源代码。在该目录中，执行以下命令以构建订单处理微服务：
 
 ----
 mvn clean install
@@ -45,7 +45,7 @@ mvn clean install
 
 前面的命令指示 Maven 编译您的源代码并生成一个可运行的 artifact，称为 Java 存档 (JAR) 文件。请注意，您需要安装 Java 和 Maven 才能成功执行此步骤。如果您的构建成功，您将看到消息 `BUILD SUCCESS`。
 
-如果构建成功，您应该在当前目录中看到一个名为 target 的目录。目标目录应包含名为 com.yyit.mss.ch02.sample01-1.0.jar 的文件。 （其他文件将在 `target` 目录中，但您目前对它们不感兴趣。）然后从 chapter02/sample01/ 目录运行以下命令以启动订单处理微服务。在这里，我们使用了一个名为 spring-boot 的 Maven 插件：
+如果构建成功，您应该在当前目录中看到一个名为 target 的目录。目标目录应包含名为 com.yyit.mss.ch02.sample01-1.0.jar 的文件。 （其他文件将在 `target` 目录中，但您目前对它们不感兴趣。）然后从 lesson02/sample01/ 目录运行以下命令以启动订单处理微服务。在这里，我们使用了一个名为 spring-boot 的 Maven 插件：
 
 [source,bash]
 ----
@@ -59,7 +59,7 @@ mvn spring-boot:run
 Started OrderApplication in <X> seconds
 ----
 
-默认情况下，Spring Boot 在 HTTP 8080 端口启动微服务。如果您的本地机器上有其他服务在 8080 端口上运行，请确保停止它们；或者，您可以通过在 `chapter02/sample01/src/main/resources/application.properties` 文件中适当地更改 `server.port` 属性的值来更改订单处理微服务的默认端口。
+默认情况下，Spring Boot 在 HTTP 8080 端口启动微服务。如果您的本地机器上有其他服务在 8080 端口上运行，请确保停止它们；或者，您可以通过在 `lesson02/sample01/src/main/resources/application.properties` 文件中适当地更改 `server.port` 属性的值来更改订单处理微服务的默认端口。
 
 === 1.3. 访问订单处理微服务
 默认情况下，Spring Boot 运行嵌入式 Apache Tomcat Web 服务器，该服务器监听端口 8080 上的 HTTP 请求。
@@ -217,16 +217,16 @@ image::doc/2.5.dio.png[]
 
 许多生产级 OAuth 2.0 授权服务器都在那里，既有专有的，也有开源的。
 然而，在本章中，我们使用一个能够发布访问令牌的简单授权服务器。
-它是使用 Spring Boot 构建的。在之前克隆的 Git 源码库中，您应该会在目录 Chapter02 下找到一个名为 sample02 的目录。
+它是使用 Spring Boot 构建的。在之前克隆的 Git 源码库中，您应该会在目录 lesson02 下找到一个名为 sample02 的目录。
 您将在那里找到简单 OAuth 2 授权服务器的源代码。首先，编译并运行它；然后查看代码以了解它的作用。
 
-要编译，使用命令行客户端导航到 chapter02/sample02 目录。从该目录中，执行以下 Maven 命令以编译和构建可运行 artifact：
+要编译，使用命令行客户端导航到 lesson02/sample02 目录。从该目录中，执行以下 Maven 命令以编译和构建可运行 artifact：
 
 ----
 mvn clean install
 ----
 
-如果您的构建成功，您将看到消息 BUILD SUCCESS。您应该在名为 target 的目录中找到名为 com.yyit.mss.ch02.sample02-1.0.jar 的文件。从chapter02/sample02 目录中使用命令行客户端执行以下命令，以运行OAuth 2.0 授权服务器：
+如果您的构建成功，您将看到消息 BUILD SUCCESS。您应该在名为 target 的目录中找到名为 com.yyit.mss.ch02.sample02-1.0.jar 的文件。从lesson02/sample02 目录中使用命令行客户端执行以下命令，以运行OAuth 2.0 授权服务器：
 
 ----
 mvn spring-boot:run
@@ -237,7 +237,7 @@ mvn spring-boot:run
 Started OAuthServerApplication in <X> seconds
 ----
 
-此消息表明您已成功启动授权服务器。默认情况下，OAuth 2.0 授权服务器在 HTTP 端口 8085 上运行。如果您的本地机器上有任何其他服务在 8085 端口上运行，请确保停止它们；或者，您可以通过在 chapter02/sample02/src/main/resources/application.properties 文件中适当地更改 server.port 属性的值来更改授权服务器的默认端口。
+此消息表明您已成功启动授权服务器。默认情况下，OAuth 2.0 授权服务器在 HTTP 端口 8085 上运行。如果您的本地机器上有任何其他服务在 8085 端口上运行，请确保停止它们；或者，您可以通过在 lesson02/sample02/src/main/resources/application.properties 文件中适当地更改 server.port 属性的值来更改授权服务器的默认端口。
 
 === 2.3 从 OAuth 2 授权服务器获取访问令牌
 
@@ -333,14 +333,14 @@ image::doc/2.6.dio.png[]
 
 === 3.2 运行示例
 
-导航到你从命令行应用程序从 Git 仓库克隆示例的目录，然后转到 chapter02/sample03 目录。从该目录中，执行以下 Maven 命令以构建示例：
+导航到你从命令行应用程序从 Git 仓库克隆示例的目录，然后转到 lesson02/sample03 目录。从该目录中，执行以下 Maven 命令以构建示例：
 
 ----
 mvn clean install
 ----
 
 如果构建成功，您应该在当前目录中看到一个名为 target 的目录。target 目录应包含名为 com.yyit.mss.ch02.sample03-1.0.jar 的文件。
-然后从 chapter02/sample03/ 目录运行以下命令以启动安全的订单处理微服务。在这里，我们使用了一个名为 spring-boot 的 Maven 插件：
+然后从 lesson02/sample03/ 目录运行以下命令以启动安全的订单处理微服务。在这里，我们使用了一个名为 spring-boot 的 Maven 插件：
 
 ----
 mvn spring-boot:run
@@ -547,7 +547,7 @@ curl  -u "orderprocessingservice:orderprocessingservicesecret" \
 
 现在您已经了解授权服务器如何根据 scope 向令牌授予权限。
 您将看到资源服务器或微服务如何对其想要保护的资源实施这些 scope。
-以下清单（chapter02/sample03/src/main/java/com/yyit/mss/ch02/sample03/configuration/SpringSecurityConfiguration.java 类文件）解释了资源服务器如何执行这些规则。
+以下清单（lesson02/sample03/src/main/java/com/yyit/mss/ch02/sample03/configuration/SpringSecurityConfiguration.java 类文件）解释了资源服务器如何执行这些规则。
 ```java
 @EnableWebSecurity
 public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
