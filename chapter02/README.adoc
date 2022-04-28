@@ -209,7 +209,7 @@ OAuth 2 授权服务器通常支持 OAuth 2 令牌自省配置文件 (https://to
 以检查访问令牌的有效性（见图 5）。
 如果访问令牌是自包含的 JWT，资源服务器可以自行验证它，而无需与授权服务器交谈。我们将在后面详细讨论自包含的 JWT。
 
-.6 订单处理微服务（资源服务器）通过与授权服务器对话来内省访问令牌。
+.5 订单处理微服务（资源服务器）通过与授权服务器对话来内省访问令牌。
 [caption="图 . "]
 image::doc/2.5.dio.png[]
 
@@ -245,8 +245,9 @@ Started OAuthServerApplication in <X> seconds
 
 [source,bash]
 ----
-curl -H "Content-Type: application/x-www-form-urlencoded" \
--d 'grant_type=client_credentials&client_id=yyit&client_secret=123456' \
+curl  -u "orderprocessingapp:orderprocessingsecret" \
+-H "Content-Type: application/x-www-form-urlencoded" \
+-d 'grant_type=client_credentials'  \
 -X POST http://localhost:8085/oauth2/token
 ----
 
@@ -262,13 +263,35 @@ curl -H "Content-Type: application/x-www-form-urlencoded" \
 }
 ----
 
+快速浏览一下这个请求并尝试理解它。
+您可以将 `orderprocessingapp:orderprocessingsecret` 视为客户端应用程序的用户名 (orderprocessingapp) 和密码 (orderprocessingsecret)。唯一的区别是这些凭证属于应用程序，而不是用户。用于请求令牌的应用程序需要携带唯一标识符和授权服务器已知的密钥。提供给 `curl` 的 `-u` 标志指示它创建一个基本的身份验证请求头并将其作为 HTTP 请求的一部分发送到授权服务器。
+然后 curl base64 编码 `orderprocessingapp:orderprocessingsecret` 字符串并创建基本身份验证 HTTP 请求头，如下所示：
+
+```
+Authorization: Basic b3JkZXJwcm9jZXNzaW5nYXBwOm9yZGVycHJvY2Vzc2luZ3NlY3JldA==
+```
+
+Basic 关键字后面的字符串是 `orderprocessingapp:orderprocessingsecret` 的 base64 编码值。
+您可能已经注意到，您正在向 OAuth 2  授权服务器的令牌端点发送基本身份验证请求头，因为令牌端点受基本身份验证 (https://tools.ietf.org/html/rfc2617) 保护。
+由于客户端应用程序在此处请求令牌，因此基本身份验证请求头应包含客户端应用程序的凭据，而不是用户的凭据。
+请注意，这里的基本身份验证不用于保护资源服务器（或微服务）；
+您为此目的使用 OAuth 2。此时的基本身份验证仅用于从授权服务器获取访问微服务所需的 OAuth 令牌。
+
+[source,bash]
+----
+curl  -H "Authorization: Basic b3JkZXJwcm9jZXNzaW5nYXBwOm9yZGVycHJvY2Vzc2luZ3NlY3JldA==" \
+-H "Content-Type: application/x-www-form-urlencoded" \
+-d 'grant_type=client_credentials'  \
+-X POST http://localhost:8085/oauth2/token
+----
+
 === 2.4 理解访问令牌响应
 
 以下列表提供了有关来自授权服务器的上述 JSON 响应的详细信息。
 
 - _access_token_ — 授权服务器向客户端应用程序颁发的令牌值（在本例中为 curl）。
 
-- _token_type_ — 令牌类型（当我们在附录 A 中讨论 OAuth 2.0 时将详细介绍此主题）。我们今天看到的大多数 OAuth 部署都使用不记名令牌。
+- _token_type_ — 令牌类型（当我们在附录 A 中讨论 OAuth 2 时将详细介绍此主题）。我们今天看到的大多数 OAuth 部署都使用不记名令牌。
 
 - _expires_in_ — 令牌的有效期，以秒为单位。在此期间之后，令牌将被视为无效（过期）。
 
@@ -276,3 +299,336 @@ curl -H "Content-Type: application/x-www-form-urlencoded" \
 
 == 3 使用 OAuth 2 保护微服务
 
+到目前为止，您已经学习了如何开发您的第一个微服务以及如何设置 OAuth 2 授权服务器以获取访问令牌。在本节中，您将看到如何保护您开发的微服务。到目前为止，您已经在没有任何安全措施的情况下访问了它。
+
+=== 3.1 基于 OAuth 2 的保护
+
+使用 OAuth 2 进行保护后，订单处理微服务现在需要来自调用客户端应用程序的有效安全令牌（访问令牌）。
+然后，它会在授权服务器的帮助下验证此访问令牌，然后再授予对其资源的访问权限。图 6 说明了这种情况。
+
+.6 客户端应用程序使用从授权服务器获取的访问令牌访问安全微服务。 Order Processing 微服务在授予对其资源的访问权限之前与授权服务器对话以验证令牌。
+[caption="图 . "]
+image::doc/2.6.dio.png[]
+
+以下是图 6 所示的每个步骤中发生的情况：
+
+. 客户端应用程序从授权服务器请求 OAuth 2 访问令牌。
+
+. 响应步骤 1 中的请求，授权服务器向客户端应用程序发出访问令牌。
+
+. 客户端应用程序向订单处理微服务发出 HTTP 请求。此请求携带在步骤 2 中获取的访问令牌作为 HTTP 请求头。
+
+. Order Processing 微服务与授权服务器一起检查接收到的访问令牌是否有效。
+
+. 响应步骤 4 中的请求，授权服务器检查提供的访问令牌是否是系统中的活动令牌（其状态为活动）以及该令牌在该特定时刻是否有效（未过期） .然后它响应 Order Processing 微服务，指示访问令牌是否有效。
+
+. 响应第 3 步中的请求，并根据第 5 步中的结果，订单处理微服务响应客户端应用程序，要么授予对所请求资源的访问权限，要么发送错误消息。
+
+已经使用 client_credentials 授权类型从授权服务器获取访问令牌。
+在这种特殊情况下，授权服务器的令牌端点通过使用 client ID 和应用程序的 client secret 进行基本身份验证来保护。
+当客户端应用程序不需要担心最终用户时，client_credentials 授予类型很好。
+如果必须，它应该选择合适的授权类型。
+*_client_credentials 授权类型主要用于系统到系统的身份验证_*。
+
+
+=== 3.2 运行示例
+
+导航到你从命令行应用程序从 Git 仓库克隆示例的目录，然后转到 chapter02/sample03 目录。从该目录中，执行以下 Maven 命令以构建示例：
+
+----
+mvn clean install
+----
+
+如果构建成功，您应该在当前目录中看到一个名为 target 的目录。target 目录应包含名为 com.yyit.mss.ch02.sample03-1.0.jar 的文件。
+然后从 chapter02/sample03/ 目录运行以下命令以启动安全的订单处理微服务。在这里，我们使用了一个名为 spring-boot 的 Maven 插件：
+
+----
+mvn spring-boot:run
+----
+
+如果您成功运行服务器，您应该看到如下消息：
+
+----
+Started OrderApplication in <X> seconds
+----
+
+现在运行前面使用的相同 curl 命令来访问订单处理微服务：
+
+```
+curl -v http://localhost:8080/orders \
+-H 'Content-Type: application/json' \
+--data-binary @- << EOF
+{
+  "items":[
+    {
+      "itemCode":"IT0001",
+      "quantity":3
+    },
+    {
+      "itemCode":"IT0004",
+      "quantity":1
+    }
+  ],
+  "shippingAddress":"福建省厦门市XX区XX街道XX小区XX栋XX室"
+}
+EOF
+```
+
+您应该会看到一条错误消息，指出请求不成功。预期的响应消息如下：
+
+----
+HTTP/1.1 401
+----
+
+您的订单处理微服务现已受到保护，如果没有从授权服务器获取的有效访问令牌，则无法再访问。
+要了解这是如何发生的，请查看订单处理微服务的修改后的源代码。
+使用您喜欢的文本编辑器或 IDE，打开位于 src/main/java/com/yyit/mss/ch02/sample03/configuration 目录中的 SpringSecurityConfiguration.java 文件。
+这个类的一个补充是注解 @EnableWebSecurity。此注解通知您的 Spring Boot 运行时将保护应用于此微服务的资源。
+
+== 4 从客户端应用程序调用安全的微服务
+
+在客户端应用程序可以访问您的安全订单处理微服务之前，它应该从授权服务器获取 OAuth2.0 访问令牌。
+如前面所述，客户端应用程序至少需要有效的 Client ID 和 Client Secret 才能获取此令牌。
+目前在您的 OAuth 2.0 授权服务器上注册的 Client ID 和 Client Secret 分别是 `orderprocessingservice` 和 `orderprocessingservicesecret`。
+和前面一样，您可以使用以下 curl 命令来获取访问令牌：
+
+```bash
+curl  -H "Authorization: Basic b3JkZXJwcm9jZXNzaW5nYXBwOm9yZGVycHJvY2Vzc2luZ3NlY3JldA==" \
+-H "Content-Type: application/x-www-form-urlencoded" \
+-d 'grant_type=client_credentials'  \
+-X POST http://localhost:8085/oauth2/token
+```
+
+如果请求成功，您应该得到一个访问令牌作为响应，如下所示：
+
+[source,json]
+----
+{
+  "access_token":"eyJraWQiOiI0MTU1MTQ2OC0zNjUyLTQ4ZTktYjNlMy04OTYyYTRiYTAzZDUiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJvcmRlcnByb2Nlc3NpbmdzZXJ2aWNlIiwiYXVkIjoib3JkZXJwcm9jZXNzaW5nc2VydmljZSIsIm5iZiI6MTY1MTEyOTI5MCwic2NvcGUiOlsicmVhZCIsIm9wZW5pZCIsIndyaXRlIl0sImlzcyI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDg1IiwiZXhwIjoxNjUxMTI5NTkwLCJpYXQiOjE2NTExMjkyOTB9.eZ2Jkwzo10qTVeMPCaJHcQy329bXky1rRcVpQlY6mzqp0EnlGac86CGp2Fz_P1GxYCrvzpqUgO2B26IMd4n2y9D1j-c3wqyndDAw7DdK673YBCpS-7_9Ovgb1q9kON0uvlLGPT4cO91_F0W2Tj6Ar6XyhiZKRmfblEYAKbNhh14-LC8l4dSwEwWtr7JzTTSmEjuFUoD955QBN3uDz3fHXW4TyRgs9zc59MEEXBCqyRETNJIOxRaRPlU-XGryHX8ntKp7UkrwbNRPLo93GUACZ9MMGTaltstbjsCnFmsULXXwam7g3cXm6HY0bqH9bWdJfYSfqkfj4diaHb_XZML7BQ",
+  "scope":"read openid write",
+  "token_type":"Bearer",
+  "expires_in":299
+}
+----
+
+如前所述，`eyJraWQiOiI0MTU1MTQ2OC0zNjUyLTQ4ZTktYjNlMy04OTYyYTRiYTAzZDUiLCJhbGciOiJSUzI1NiJ9...` 是您获得的访问令牌的值，其有效期为将近 5 分钟（299 秒）。
+需要将此访问令牌提供给您将向订单处理微服务发出的 HTTP 请求。
+您需要将令牌作为名为 Authorization 的 HTTP 请求头发送，
+并且请求头值需要以字符串 Bearer 为前缀，如下所示：
+
+----
+Authorization: Bearer  eyJraWQiOiI0MTU1MTQ2OC0zNjUyLTQ4ZTktYjNlMy04OTYyYTRiYTAzZDUiLCJhbGciOiJSUzI1NiJ9...
+----
+
+访问订单处理微服务的新 curl 命令如下：
+
+```bash
+curl -v http://localhost:8080/orders \
+-H 'Authorization: Bearer eyJraWQiOiI0MTU1MTQ2OC0zNjUyLTQ4ZTktYjNlMy04OTYyYTRiYTAzZDUiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJvcmRlcnByb2Nlc3NpbmdzZXJ2aWNlIiwiYXVkIjoib3JkZXJwcm9jZXNzaW5nc2VydmljZSIsIm5iZiI6MTY1MTEyOTI5MCwic2NvcGUiOlsicmVhZCIsIm9wZW5pZCIsIndyaXRlIl0sImlzcyI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDg1IiwiZXhwIjoxNjUxMTI5NTkwLCJpYXQiOjE2NTExMjkyOTB9.eZ2Jkwzo10qTVeMPCaJHcQy329bXky1rRcVpQlY6mzqp0EnlGac86CGp2Fz_P1GxYCrvzpqUgO2B26IMd4n2y9D1j-c3wqyndDAw7DdK673YBCpS-7_9Ovgb1q9kON0uvlLGPT4cO91_F0W2Tj6Ar6XyhiZKRmfblEYAKbNhh14-LC8l4dSwEwWtr7JzTTSmEjuFUoD955QBN3uDz3fHXW4TyRgs9zc59MEEXBCqyRETNJIOxRaRPlU-XGryHX8ntKp7UkrwbNRPLo93GUACZ9MMGTaltstbjsCnFmsULXXwam7g3cXm6HY0bqH9bWdJfYSfqkfj4diaHb_XZML7BQ'
+-H 'Content-Type: application/json' \
+--data-binary @- << EOF
+{
+  "items":[
+    {
+      "itemCode":"IT0001",
+      "quantity":3
+    },
+    {
+      "itemCode":"IT0004",
+      "quantity":1
+    }
+  ],
+  "shippingAddress":"福建省厦门市XX区XX街道XX小区XX栋XX室"
+}
+EOF
+```
+
+请注意，`-H` 参数用于将访问令牌作为名为 Authorization 的 HTTP 请求头传递。
+这一次，您应该看到订单处理微服务响应一条正确的消息，说明订单成功：
+
+```json
+{
+  "orderId":"481cd245-df48-4088-ba6c-e2daeac69b6c",
+  "items":[
+    {"itemCode":"IT0001","quantity":3},
+    {"itemCode":"IT0004","quantity":1}
+  ],
+  "shippingAddress":"福建省厦门市XX区XX街道XX小区XX栋XX室"
+}
+```
+
+如果您看到此消息，则您已成功创建、部署和测试了安全的微服务。
+恭喜！客户端应用程序 (curl) 在 HTTP 请求头中发送到订单处理微服务的访问令牌已根据授权服务器进行验证。
+这个过程称为令牌自省。
+由于内省操作的结果最终成功，订单处理微服务授予对其资源的访问权限。
+
+== 5 使用 OAuth 2 scope 执行服务级别授权
+
+需要有效的访问令牌才能访问微服务。身份验证是应用于微服务以防止其受到欺骗的第一级防御。
+在授予对微服务的访问权限之前发生的身份验证步骤可确保调用实体是系统中的有效客户端（用户、应用程序或两者）。
+然而，身份验证并未提及客户端在系统中拥有的权限级别。
+
+一个给定的微服务可能有多个操作。
+例如，订单处理微服务有一个用于创建订单的操作 (`POST /orders`) 和另一个用于检索订单详细信息的操作 (`GET /orders/{id}`)。
+微服务中的每个操作可能需要不同级别的访问权限。
+
+privilege 描述了您被允许对资源执行的操作。通常，您在组织中的一个或多个角色描述了您在该组织内可以执行的操作以及您不可以执行的操作。privilege 还可以表明地位或可信度。如果您乘坐过商业航空公司，您可能熟悉属于航空公司飞行常客计划的旅客的会员身份。同样，privilege 是用户或应用程序在系统中拥有的访问级别的指示。
+
+在 OAuth 2.0 的世界中，privilege 被映射到一个 scope。scope 是抽象 privilege 的方式。
+privilege 可以是用户的角色、成员身份、可信度或其他内容。它也可以是几个这样的属性的组合。
+您使用 scope 来抽象 privilege 的含义。
+scope 声明调用客户端应用程序授予对资源的访问权限所需的 privilege。
+例如，placeOrder 操作需要一个称为 write 的 scope，而 getOrder 操作需要一个称为 read 的 scope。
+
+=== 5.1 从授权服务器获取作用域访问令牌
+
+您在本章中构建的授权服务器包含两个应用程序：一个带有 Client ID `orderprocessingapp`，用于访问微服务，
+另一个带有 Client ID `orderprocessingservice`。
+您以这样一种方式配置这些应用程序，即具有 Client ID `orderprocessingapp` 的第一个应用程序有权获得读取和写入 scope，而具有 Client ID `orderprocessingservice` 的第二个应用程序仅有权获得读取 scope，如以下列表：
+
+[source,java]
+----
+ @Bean
+    public RegisteredClientRepository registeredClientRepository(PasswordEncoder encoder) {
+        RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("orderprocessingapp")
+                .clientSecret(encoder.encode("orderprocessingsecret"))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .redirectUri("https://oidcdebugger.com/debug")
+                .redirectUri("https://www.baidu.com")
+                .scope(OidcScopes.OPENID)
+                .scope("read")
+                .scope("write")
+                .build();
+
+        RegisteredClient registeredClient1 = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("orderprocessingservice")
+                .clientSecret(encoder.encode("orderprocessingservicesecret"))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .redirectUri("https://oidcdebugger.com/debug")
+                .redirectUri("https://www.baidu.com")
+                .scope(OidcScopes.OPENID)
+                .scope("read")
+                .build();
+        return new InMemoryRegisteredClientRepository(registeredClient,registeredClient1);
+    }
+----
+
+此代码表明，任何使用 `orderprocessingapp` 的人都可以在 `read` 和 `write` scope 内获取访问令牌，而任何使用 `orderprocessingservice` 的用户只能在 `read` scope 内获取访问令牌。
+在迄今为止获取访问令牌的所有请求中，您使用 `orderprocessingapp` 作为 Client ID 并请求了 read 和 write 两个 scope。
+
+现在执行相同的请求以获取一个以 `orderprocessingservice` 作为 Client ID 的访问令牌，以查看令牌响应是什么样的。执行此 curl 命令以发出令牌请求：
+
+```bash
+curl  -u "orderprocessingservice:orderprocessingservicesecret" \
+-H "Content-Type: application/x-www-form-urlencoded" \
+-d 'grant_type=client_credentials'  \
+-X POST http://localhost:8085/oauth2/token
+```
+
+如果令牌请求成功，您应该会看到以下响应：
+
+```json
+{
+  "access_token":"eyJraWQiOiIyNzlkNzM5Zi1mNjIzLTRjMDEtOTFmYi00NTVmZThjMzFiZTIiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJvcmRlcnByb2Nlc3NpbmdzZXJ2aWNlIiwiYXVkIjoib3JkZXJwcm9jZXNzaW5nc2VydmljZSIsIm5iZiI6MTY1MTEzMDQ5Nywic2NvcGUiOlsicmVhZCIsIm9wZW5pZCJdLCJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6ODA4NSIsImV4cCI6MTY1MTEzMDc5NywiaWF0IjoxNjUxMTMwNDk3fQ.ifh0XrokV_mueOddSq-3dZpcrAkbrZsgFFE9A7l9oIrYbudEXxgeKt71MyNLe7vkS_TO1HijOusTxoqhQH-CbsXmz_44rOPinSYLXLQJhlXLG7YGisePchbwr4MdR_j7PbtpVtaKPpGF8_y5WKLDdXbYhwZZ2cSDhVBljGKhjimakeKRb8FvpAATasdOdxSCFRB_9d2e6phoSKMOSUHRvLEcv__UIWvaBzmaDV1D241Tblziw8SFNWpDdb0HXEIDCec-aktPEyxd2qPweEW5G-fTtrAb7bbSY5yI8Mlax7z0q1XGPHNuuobG6r1GvtB5x2iaS-MuzpRZSWLa-t1ajQ",
+  "scope":"read openid",
+  "token_type":"Bearer",
+  "expires_in":299
+}
+```
+
+
+=== 5.2 使用 OAuth 2.0 scope 保护对微服务的访问
+
+现在您已经了解授权服务器如何根据 scope 向令牌授予权限。
+您将看到资源服务器或微服务如何对其想要保护的资源实施这些 scope。
+以下清单（chapter02/sample03/src/main/java/com/yyit/mss/ch02/sample03/configuration/SpringSecurityConfiguration.java 类文件）解释了资源服务器如何执行这些规则。
+```java
+@EnableWebSecurity
+public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    private static final String SECURED_READ_SCOPE = "SCOPE_read";
+
+    private static final String SECURED_WRITE_SCOPE = "SCOPE_write";
+
+    private static final String SECURED_PATTERN_WRITE = "/orders/**";
+
+    private static final String SECURED_PATTERN_READ = "/orders/{id}";
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        // @formatter:off
+        http.authorizeRequests()
+                .antMatchers(SECURED_PATTERN_WRITE).hasAuthority(SECURED_WRITE_SCOPE)
+                .antMatchers(SECURED_PATTERN_READ).hasAuthority(SECURED_READ_SCOPE)
+                .anyRequest().authenticated()
+                .and()
+                .oauth2ResourceServer().jwt();
+        // @formatter:on
+    }
+
+}
+```
+
+如您所见，该代码指示微服务运行时 (Spring Boot) 检查特定 HTTP 方法和请求路径的相关 scope。这行代码
+
+```java
+.antMatchers(SECURED_PATTERN_WRITE).hasAuthority(SECURED_WRITE_SCOPE)
+```
+
+检查针对与正则表达式 `/orders/**` 匹配的请求路径发出的任何请求的 scope write。类似地，这行代码检查在路径 `/orders/{id}` 上为请求 read 的 scope：
+
+```java
+.antMatchers(SECURED_PATTERN_READ).hasAuthority(SECURED_READ_SCOPE)
+```
+
+现在尝试使用只有 `read` scope 的令牌访问 POST /orders 资源。执行您上次使用的相同 curl 命令来访问此资源，但这次使用不同的令牌（仅具有读取访问权限的令牌）：
+
+```bash
+curl -v http://localhost:8080/orders \
+-H 'Authorization: Bearer eyJraWQiOiIyNzlkNzM5Zi1mNjIzLTRjMDEtOTFmYi00NTVmZThjMzFiZTIiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJvcmRlcnByb2Nlc3NpbmdzZXJ2aWNlIiwiYXVkIjoib3JkZXJwcm9jZXNzaW5nc2VydmljZSIsIm5iZiI6MTY1MTEzMDg2NCwic2NvcGUiOlsicmVhZCIsIm9wZW5pZCJdLCJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6ODA4NSIsImV4cCI6MTY1MTEzMTE2NCwiaWF0IjoxNjUxMTMwODY0fQ.EjUNRVaXQHiqWNFbi0Vbi13HMVo9zjVNcA8TlxpVCRwS9it43RiKxrctZeYGozuFqQGTDq9K3ikQGMeZAnj0iPM2G7n8xkBEj-JPc7ORY8ywkMKta52I_osRK3-_CZVnukaNniv6oD5UKHHQ5iLI0fO-k5sa-Qj8Mc1vsOBQTgj9fhv86r3BXsL8nXtdKwD9HBNDQJgbIPzZhoF4vmOf4TnolWz3b-fqnEUqLaj7WHJUkxZW6ZDrsrxIe3T8cNhr76Xf8PpoWu_amw5FJ9acgsuRIAoWqTgabVPonQyUQFuKxBWOA-KBOcYsfADBVAQ5zu-LzaLJFBSqknylPaqBmw' \
+-H 'Content-Type: application/json' \
+--data-binary @- << EOF
+{
+  "items":[
+    {
+      "itemCode":"IT0001",
+      "quantity":3
+    },
+    {
+      "itemCode":"IT0004",
+      "quantity":1
+    }
+  ],
+  "shippingAddress":"福建省厦门市XX区XX街道XX小区XX栋XX室"
+}
+EOF
+```
+
+执行此命令时，应该会看到来自资源服务器的此错误响应：
+
+```
+< HTTP/1.1 403
+< WWW-Authenticate: Bearer error="insufficient_scope", error_description="The request requires higher privileges than provided by the access token.", error_uri="
+```
+
+此响应表示此特定操作的令牌 scope 不足，所需 scope 为 `write`。
+
+
+== 总结
+
+
+- OAuth 2 是一种授权框架，广泛用于保护边缘微服务部署。
+
+- OAuth 2 支持多种授权类型。我们在本章中使用的客户端凭据授权类型主要用于系统到系统的身份验证。
+
+- 授权服务器发出的每个访问令牌都与一个或多个 scope 耦合。 OAuth 2 中使用 scope 来表达附加到访问令牌的权限。
+
+- OAuth 2 scope 用于保护和强制执行微服务中某些操作中的访问控制检查。
+
+- 当前所有示例都使用 HTTP（而不是 HTTPS）端点来使您不必设置正确的证书，并使您可以在需要时检查线路（网络）上传递的消息。在生产系统中，我们不建议对任何端点使用 HTTP。

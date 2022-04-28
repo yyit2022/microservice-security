@@ -53,20 +53,34 @@ public class AuthorizationServerConfiguration {
     @Bean
     public RegisteredClientRepository registeredClientRepository(PasswordEncoder encoder) {
         RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("yyit")
-                .clientSecret(encoder.encode("123456"))
+                .clientId("orderprocessingapp")
+                .clientSecret(encoder.encode("orderprocessingsecret"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .redirectUri("https://oidcdebugger.com/debug")
                 .redirectUri("https://www.baidu.com")
                 .scope(OidcScopes.OPENID)
-                .scope("orders")
+                .scope("read")
+                .scope("write")
+                .build();
+
+        RegisteredClient registeredClient1 = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("orderprocessingservice")
+                .clientSecret(encoder.encode("orderprocessingservicesecret"))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .redirectUri("https://oidcdebugger.com/debug")
+                .redirectUri("https://www.baidu.com")
+                .scope(OidcScopes.OPENID)
+                .scope("read")
                 .build();
 
 
-        return new InMemoryRegisteredClientRepository(registeredClient);
+        return new InMemoryRegisteredClientRepository(registeredClient,registeredClient1);
     }
 
 
@@ -106,7 +120,7 @@ public class AuthorizationServerConfiguration {
     public ProviderSettings providerSettings() {
         // @formatter:off
         return ProviderSettings.builder()
-                .issuer("http://localhost:9000")
+                .issuer("http://localhost:8085")
                 .build();
         // @formatter:on
     }

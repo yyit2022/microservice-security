@@ -1,0 +1,36 @@
+# curl -v http://localhost:8080/orders
+#-H 'Content-Type: application/json'
+#-d '
+#{
+#  "items":[
+#    {
+#      "itemCode":"IT0001",
+#      "quantity":3
+#    },
+#    {
+#      "itemCode":"IT0004",
+#      "quantity":1
+#    }
+#  ],
+#  "shippingAddress":"福建省厦门市XX区XX街道XX小区XX栋XX室"
+#}'
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+
+{
+  "items":[
+    {
+      "itemCode":"IT0001",
+      "quantity":3
+    },
+    {
+      "itemCode":"IT0004",
+      "quantity":1
+    }
+  ],
+  "shippingAddress":"福建省厦门市XX区XX街道XX小区XX栋XX室"
+}
+
+###
+
