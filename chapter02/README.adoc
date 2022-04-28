@@ -109,7 +109,7 @@ NOTE: 这个示例都使用 HTTP（而非 HTTPS）端点，这样您就不必设
 
 === 1.4 源代码目录中有什么？
 
-让我们在 sample01 目录中导航并检查其内容。您应该会看到一个名为 `pom.xml` 的文件和一个名为 `src` 的目录。导航到 src/main/java/com/manning/mss/ch02/sample01/service/ 目录。您将看到两个文件：`OrderApplication.java` 和 `OrderProcesingService.java`。
+让我们在 sample01 目录中导航并检查其内容。您应该会看到一个名为 `pom.xml` 的文件和一个名为 `src` 的目录。导航到 src/main/java/com/yyit/mss/ch02/sample01/service/ 目录。您将看到两个文件：`OrderApplication.java` 和 `OrderProcesingService.java`。
 
 在深入研究这些文件的内容之前，让我们解释一下在此处尝试构建的内容。
 微服务是网络可访问功能的集合。
@@ -219,4 +219,60 @@ image::doc/2.5.dio.png[]
 然而，在本章中，我们使用一个能够发布访问令牌的简单授权服务器。
 它是使用 Spring Boot 构建的。在之前克隆的 Git 源码库中，您应该会在目录 Chapter02 下找到一个名为 sample02 的目录。
 您将在那里找到简单 OAuth 2 授权服务器的源代码。首先，编译并运行它；然后查看代码以了解它的作用。
+
+要编译，使用命令行客户端导航到 chapter02/sample02 目录。从该目录中，执行以下 Maven 命令以编译和构建可运行 artifact：
+
+----
+mvn clean install
+----
+
+如果您的构建成功，您将看到消息 BUILD SUCCESS。您应该在名为 target 的目录中找到名为 com.yyit.mss.ch02.sample02-1.0.jar 的文件。从chapter02/sample02 目录中使用命令行客户端执行以下命令，以运行OAuth 2.0 授权服务器：
+
+----
+mvn spring-boot:run
+----
+
+如果成功运行服务器，应该看到以下消息：
+----
+Started OAuthServerApplication in <X> seconds
+----
+
+此消息表明您已成功启动授权服务器。默认情况下，OAuth 2.0 授权服务器在 HTTP 端口 8085 上运行。如果您的本地机器上有任何其他服务在 8085 端口上运行，请确保停止它们；或者，您可以通过在 chapter02/sample02/src/main/resources/application.properties 文件中适当地更改 server.port 属性的值来更改授权服务器的默认端口。
+
+=== 2.3 从 OAuth 2 授权服务器获取访问令牌
+
+要从授权服务器获取访问令牌，请使用 HTTP 客户端向服务器发出 HTTP 请求。在现实世界中，访问微服务的客户端应用程序会发出此请求。为此，您将使用 curl 作为 HTTP 客户端。要从授权服务器（在端口 8085 上运行）请求访问令牌，请使用命令行客户端运行以下命令：
+
+[source,bash]
+----
+curl -H "Content-Type: application/x-www-form-urlencoded" \
+-d 'grant_type=client_credentials&client_id=yyit&client_secret=123456' \
+-X POST http://localhost:8085/oauth2/token
+----
+
+如果您的请求成功，您应该会看到类似于以下内容的响应：
+
+[source,json]
+----
+{
+  "access_token":"eyJraWQiOiJhOTQ5ODkyNC1kODE1LTRlZmItODlmYS1lYmFkMmFkOTU4OGMiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ5eWl0IiwiYXVkIjoieXlpdCIsIm5iZiI6MTY1MTExNzE2MCwic2NvcGUiOlsib3BlbmlkIiwib3JkZXJzIl0sImlzcyI6Imh0dHA6XC9cL2xvY2FsaG9zdDo5MDAwIiwiZXhwIjoxNjUxMTE3NDYwLCJpYXQiOjE2NTExMTcxNjB9.SboppQgJ57rKCiq2sIivOeOKxNJoYjEZ-YXFjeLAE1x80cPLBAwf106YuUsZJNyxW_3uEn0K7JNIT7DWg3mVdhIHe5XOAD7W6nRR3DP_e3WXlXwugaNxDIInXBCFqTPleVldeSXEjMMpSGrsDnaIClAV1D9c0vrfZCtrUT0CvUO_tgMWtpQyCXGHLeeDsDYtasxXvgsocnozfoNpQyxvBdARtsqZEmBIErDPP-gr7FN_KETqiUfQ_CZMjVYV-992SNW-l7kOxdI03LhLygQ6CBiQWkCehQu1YMGgroiMVS6x1-yeT1A2LpClnnr2HsUbZAa9BDEMUzLqjDVZXCopqQ",
+  "scope":"openid orders",
+  "token_type":"Bearer",
+  "expires_in":300
+}
+----
+
+=== 2.4 理解访问令牌响应
+
+以下列表提供了有关来自授权服务器的上述 JSON 响应的详细信息。
+
+- _access_token_ — 授权服务器向客户端应用程序颁发的令牌值（在本例中为 curl）。
+
+- _token_type_ — 令牌类型（当我们在附录 A 中讨论 OAuth 2.0 时将详细介绍此主题）。我们今天看到的大多数 OAuth 部署都使用不记名令牌。
+
+- _expires_in_ — 令牌的有效期，以秒为单位。在此期间之后，令牌将被视为无效（过期）。
+
+- _scope_ — 允许令牌在资源服务器（微服务）上执行的操作。
+
+== 3 使用 OAuth 2 保护微服务
 
