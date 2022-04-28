@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
-
 @RestController
 @RequestMapping("/orders")
 public class OrderProcesingService {
@@ -26,9 +25,9 @@ public class OrderProcesingService {
     @PostMapping
     public ResponseEntity<Order> placeOrder(@RequestBody Order order) {
 
-        System.out.println("Received Order For " + order.getItems().size() + " Items");
-        order.getItems().forEach((lineItem) -> System.out.println("Item: " + lineItem.getItemCode() +
-                " Quantity: " + lineItem.getQuantity()));
+        System.out.println("接收到订单 " + order.getItems().size() + " 项");
+        order.getItems().forEach((lineItem) -> System.out.println("订单项: " + lineItem.getItemCode() +
+                " 数量: " + lineItem.getQuantity()));
 
         String orderId = UUID.randomUUID().toString();
         order.setOrderId(orderId);
@@ -39,10 +38,9 @@ public class OrderProcesingService {
     @GetMapping("/{id}")
     public ResponseEntity<Order> getOrder(@PathVariable String id) throws OrderNotFoundException {
 
-        if(orders.containsKey(id)){
+        if (orders.containsKey(id)) {
             return new ResponseEntity<Order>(orders.get(id), HttpStatus.OK);
-        }
-        else {
+        } else {
             throw new OrderNotFoundException();
         }
     }
