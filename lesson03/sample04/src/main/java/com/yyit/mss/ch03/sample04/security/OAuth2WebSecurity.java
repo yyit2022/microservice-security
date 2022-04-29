@@ -12,14 +12,18 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableWebFluxSecurity
 public class OAuth2WebSecurity {
 
+
+
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,PermissionAuthorizationManager permissionAuthorizationManager) {
         // @formatter:off
         http
                 .authorizeExchange()
-                .anyExchange().authenticated()
+                .pathMatchers("/api/oauth2/**").permitAll()
+                .anyExchange().access(permissionAuthorizationManager)
                 .and()
                 .oauth2ResourceServer(ServerHttpSecurity.OAuth2ResourceServerSpec::jwt);
+        http.csrf().disable();
         return http.build();
         // @formatter:on
     }

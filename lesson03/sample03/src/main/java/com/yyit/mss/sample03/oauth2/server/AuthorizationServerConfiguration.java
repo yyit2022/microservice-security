@@ -1,4 +1,4 @@
-package com.yyit.mss.sample02.oauth2.server;
+package com.yyit.mss.sample03.oauth2.server;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;

@@ -314,3 +314,99 @@ image::doc/3.9.dio.png[]
 [caption="图 . "]
 image::doc/3.10.dio.png[]
 
+要构建授权服务器，请从命令行客户端导航到 lesson03/sample03 目录，然后执行以下命令：
+
+----
+mvn clean install
+----
+
+授权服务器搭建完成后，可以使用以下命令启动：
+
+----
+mvn spring-boot:run
+----
+
+当授权服务器成功启动后，您可以通过 Spring Cloud Gateway 网关向其请求令牌。
+但是，我们没有在 Spring Cloud Gateway 网关上强制执行 OAuth 2.0 安全筛选，从 3.2 节中的 sample02 开始。
+因此，您需要停止它并从 sample04 构建并运行一个新的 Spring Cloud Gateway 网关，我们在其中实现了 OAuth 2 安全筛选。
+
+在构建 sample04 之前，首先查看 sample04/src/main/resources/application.yml 文件中的以下属性。
+此属性指向授权服务器的令牌验证端点。
+
+```yaml
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8085
+```
+
+要构建新的 API 网关，请打开一个新的终端窗口并导航到 lesson03/sample04 目录，然后执行以下命令：
+
+----
+mvn clean install
+----
+
+网关构建完成后，可以使用以下命令启动它：
+
+----
+mvn spring-boot:run
+----
+
+一旦网关在端口 9090 上成功启动，在新的终端窗口上执行以下命令，通过 API 网关从授权服务器获取访问令牌。
+这里我们使用 OAuth 2.0 client_credentials 授权类型，`orderprocessingapp` 作为 Client ID，`orderprocessingsecret` 作为 Client Secret：
+
+```bash
+curl -u orderprocessingapp:orderprocessingsecret \
+-H "Content-Type: application/x-www-form-urlencoded" \
+-d "grant_type=client_credentials" \
+http://localhost:9090/api/oauth2/token
+```
+
+应该在如下所示的响应中收到访问令牌：
+
+```json
+{
+  "access_token":"eyJraWQiOiIxMmJlZDVlMi1hNzM2LTQ2ZjUtOWJlYS02NzRlYzQxMDA2ODQiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJvcmRlcnByb2Nlc3NpbmdhcHAiLCJhdWQiOiJvcmRlcnByb2Nlc3NpbmdhcHAiLCJuYmYiOjE2NTEyMjE1OTksInNjb3BlIjpbInJlYWQiLCJvcGVuaWQiLCJ3cml0ZSJdLCJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6ODA4NSIsImV4cCI6MTY1MTIyMTg5OSwiaWF0IjoxNjUxMjIxNTk5fQ.F5uO0IZpccBCXT2UDX9tkFszTh1bgK32DMunmJg4pWbXuF2kyomjRSf6e40bdgXOk7A60WHm7Vy7CGfSBP4it4wmuCGqfC6hZsfTzqizv012ilkpH1FEz8-C6fEZR29kl18A6jJGxH9ai6u6Ntb6Xo4AJOCI3oAL-X0H2W96QPOy-AvzXpTOl9SJSRuLOgxFnTotkq-UiaCLT97Si-mY_FZXOBxPjgU6VHZGyBO40po0Pjt-vtEujEY9_7c8kyO8R75V5JiAAYXI3wEl7Jj-1IZtX5C3gdQkRQ0exPIfsNCQTT6gAL_z3XKmPD91f_950wygwpT66jDUxXqHF4LGLQ",
+  "scope":"read openid write",
+  "token_type":"Bearer",
+  "expires_in":299
+}
+```
+
+客户端应用程序从授权服务器的令牌端点获取访问令牌后，客户端应用程序将使用此令牌通过 API 网关访问订单处理微服务。
+通过 API 网关公开订单处理微服务的目的是使网关强制执行所有与安全相关的策略，而订单处理微服务只关注它执行的业务逻辑。
+这种情况符合微服务的原则，即微服务应该专注于做一件事。
+仅当请求客户端携带有效的 OAuth 2 访问令牌时，API 网关才允许对订单处理微服务的请求。
+
+现在，让我们像以前一样尝试使用以下命令通过 API 网关访问订单处理微服务（没有有效的访问令牌）：
+
+```bash
+curl -v \
+http://localhost:9090/api/orders/7c3fb57b-3198-4cf3-9911-6dd157b93333
+```
+
+此命令现在应该为您提供一条身份验证错误消息，如下所示。
+此错误消息确认 API 网关在强制执行 OAuth 2.0 安全筛选的情况下不允许任何请求在没有有效令牌的情况下通过它：
+
+```
+< HTTP/1.1 401
+< Transfer-Encoding: chunked
+<
+{"error": true, "reason":"Authentication Failed"}
+```
+
+网关不再授予对资源服务器上资源的开放访问权限。它要求进行身份验证。
+因此，我们需要使用有效的令牌通过 API 网关访问订单处理微服务。让我们使用刚刚通过 /token 端点获取的访问令牌重试访问同一个订单处理微服务。
+为此，您可以使用以下命令。
+确保具有第 3.1 中的正确订单 ID，并将以下命令中的 `7c3fb57b-3198-4cf3-9911-6dd157b93333` 替换为它：
+
+```bash
+curl \
+http://localhost:9090/api/orders/7c3fb57b-3198-4cf3-9911-6dd157b93333 \
+-H "Authorization: Bearer eyJraWQiOiIxMmJlZDVlMi1hNzM2LTQ2ZjUtOWJlYS02NzRlYzQxMDA2ODQiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJvcmRlcnByb2Nlc3NpbmdhcHAiLCJhdWQiOiJvcmRlcnByb2Nlc3NpbmdhcHAiLCJuYmYiOjE2NTEyMjE1OTksInNjb3BlIjpbInJlYWQiLCJvcGVuaWQiLCJ3cml0ZSJdLCJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6ODA4NSIsImV4cCI6MTY1MTIyMTg5OSwiaWF0IjoxNjUxMjIxNTk5fQ.F5uO0IZpccBCXT2UDX9tkFszTh1bgK32DMunmJg4pWbXuF2kyomjRSf6e40bdgXOk7A60WHm7Vy7CGfSBP4it4wmuCGqfC6hZsfTzqizv012ilkpH1FEz8-C6fEZR29kl18A6jJGxH9ai6u6Ntb6Xo4AJOCI3oAL-X0H2W96QPOy-AvzXpTOl9SJSRuLOgxFnTotkq-UiaCLT97Si-mY_FZXOBxPjgU6VHZGyBO40po0Pjt-vtEujEY9_7c8kyO8R75V5JiAAYXI3wEl7Jj-1IZtX5C3gdQkRQ0exPIfsNCQTT6gAL_z3XKmPD91f_950wygwpT66jDUxXqHF4LGLQ"
+```
+
+
+

@@ -1,4 +1,4 @@
-package com.yyit.mss.sample02.oauth2.server;
+package com.yyit.mss.sample03.oauth2.server;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

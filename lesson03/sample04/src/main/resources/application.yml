@@ -10,6 +10,12 @@ spring:
             - Path=/api/orders/**
           filters:
             - StripPrefix=1
+        - id: auth2Module
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/oauth2/**
+          filters:
+            - StripPrefix=1
   security:
     oauth2:
       resourceserver:
