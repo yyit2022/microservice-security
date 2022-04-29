@@ -1,0 +1,17 @@
+server:
+  port: 9090
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: orderModule
+          uri: http://localhost:8080/
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - StripPrefix=1
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8085

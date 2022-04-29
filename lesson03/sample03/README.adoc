@@ -1,0 +1,9 @@
+= 授权服务器
+
+
+```
+curl -H "Content-Type: application/x-www-form-urlencoded" \
+-d 'grant_type=client_credentials&client_id=yyit&client_secret=123456' \
+-X POST http://localhost:8085/oauth2/token
+```
+
