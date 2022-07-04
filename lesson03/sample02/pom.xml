@@ -11,8 +11,8 @@
     <groupId>com.yyit.mss</groupId>
     <artifactId>sample02</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>sample02</name>
-    <description>sample02</description>
+    <name>lesson3-sample02</name>
+    <description>微服务安全第三课- sample02 (网关服务)</description>
     <properties>
         <java.version>11</java.version>
         <spring-cloud.version>2021.0.2</spring-cloud.version>

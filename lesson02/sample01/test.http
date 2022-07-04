@@ -1,0 +1,12 @@
+# curl  -u "orderprocessingapp:orderprocessingsecret"
+#-H "Content-Type: application/x-www-form-urlencoded"
+#-d 'grant_type=client_credentials'
+#-X POST http://localhost:8085/oauth2/token
+POST http://localhost:8085/oauth2/token
+Authorization: Basic orderprocessingapp:orderprocessingsecret
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials
+
+###
+

@@ -134,7 +134,8 @@ GET /orders/{orderid}
 让我们看一下代码示例，看看如何用 Java 开发一个方法并使用 Spring Boot 将其公开为 HTTP 资源。使用操作系统中的文件浏览器打开位于 sample01/src/main/java/com/yyit/mss/ch02/sample01/service 的目录，然后在文本编辑器中打开 `OrderProcessingService.java` 文件。如果您熟悉 Eclipse、NetBeans、IntelliJ IDEA 或任何类似的 Java 集成开发环境 (IDE)，您可以将示例作为 Maven 项目导入到 IDE。以下清单显示了 `OrderProcessingService.java` 文件的内容。
 
 .清单 2.1 `OrderProcessingService.java` 文件的内容
-```java
+[source,java]
+----
 @RestController // 通知 Spring Boot 运行时将此类公开为微服务的 Rest 资源
 @RequestMapping("/orders") // 指定服务所有资源所在的路径
 public class OrderProcessingService {
@@ -153,7 +154,7 @@ public class OrderProcessingService {
         return new ResponseEntity<Order>(order, HttpStatus.CREATED);
     }
 }
-```
+----
 
 这段代码是一个简单的 Java 类，带有一个名为 `placeOrder` 的函数。您可能会注意到，我们使用 `@RestController` 注解装饰了该类，以通知 Spring Boot 运行时您有兴趣将此类公开为微服务。 `@RequestMapping` 注解指定了服务的所有资源所在的路径。我们还使用 `@PostMapping` 注解修饰了 `placeOrder` 函数，它通知 Spring Boot 运行时将此函数公开为 `/orders` 上下文中的 `POST` HTTP 方法（操作）。 `@RequestBody` 注解表示 HTTP 请求中的有效负载将分配给 `Order` 类型的对象。
 
@@ -354,7 +355,8 @@ Started OrderApplication in <X> seconds
 
 现在运行前面使用的相同 curl 命令来访问订单处理微服务：
 
-```
+[source]
+----
 curl -v http://localhost:8080/orders \
 -H 'Content-Type: application/json' \
 --data-binary @- << EOF
@@ -372,7 +374,7 @@ curl -v http://localhost:8080/orders \
   "shippingAddress":"福建省厦门市XX区XX街道XX小区XX栋XX室"
 }
 EOF
-```
+----
 
 您应该会看到一条错误消息，指出请求不成功。预期的响应消息如下：
 
@@ -422,7 +424,8 @@ Authorization: Bearer  eyJraWQiOiI0MTU1MTQ2OC0zNjUyLTQ4ZTktYjNlMy04OTYyYTRiYTAzZ
 
 访问订单处理微服务的新 curl 命令如下：
 
-```bash
+[source,bash]
+----
 curl -v http://localhost:8080/orders \
 -H 'Authorization: Bearer eyJraWQiOiI0MTU1MTQ2OC0zNjUyLTQ4ZTktYjNlMy04OTYyYTRiYTAzZDUiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJvcmRlcnByb2Nlc3NpbmdzZXJ2aWNlIiwiYXVkIjoib3JkZXJwcm9jZXNzaW5nc2VydmljZSIsIm5iZiI6MTY1MTEyOTI5MCwic2NvcGUiOlsicmVhZCIsIm9wZW5pZCIsIndyaXRlIl0sImlzcyI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDg1IiwiZXhwIjoxNjUxMTI5NTkwLCJpYXQiOjE2NTExMjkyOTB9.eZ2Jkwzo10qTVeMPCaJHcQy329bXky1rRcVpQlY6mzqp0EnlGac86CGp2Fz_P1GxYCrvzpqUgO2B26IMd4n2y9D1j-c3wqyndDAw7DdK673YBCpS-7_9Ovgb1q9kON0uvlLGPT4cO91_F0W2Tj6Ar6XyhiZKRmfblEYAKbNhh14-LC8l4dSwEwWtr7JzTTSmEjuFUoD955QBN3uDz3fHXW4TyRgs9zc59MEEXBCqyRETNJIOxRaRPlU-XGryHX8ntKp7UkrwbNRPLo93GUACZ9MMGTaltstbjsCnFmsULXXwam7g3cXm6HY0bqH9bWdJfYSfqkfj4diaHb_XZML7BQ'
 -H 'Content-Type: application/json' \
@@ -441,12 +444,13 @@ curl -v http://localhost:8080/orders \
   "shippingAddress":"福建省厦门市XX区XX街道XX小区XX栋XX室"
 }
 EOF
-```
+----
 
 请注意，`-H` 参数用于将访问令牌作为名为 Authorization 的 HTTP 请求头传递。
 这一次，您应该看到订单处理微服务响应一条正确的消息，说明订单成功：
 
-```json
+[source,json]
+----
 {
   "orderId":"481cd245-df48-4088-ba6c-e2daeac69b6c",
   "items":[
@@ -455,7 +459,7 @@ EOF
   ],
   "shippingAddress":"福建省厦门市XX区XX街道XX小区XX栋XX室"
 }
-```
+----
 
 如果您看到此消息，则您已成功创建、部署和测试了安全的微服务。
 恭喜！客户端应用程序 (curl) 在 HTTP 请求头中发送到订单处理微服务的访问令牌已根据授权服务器进行验证。

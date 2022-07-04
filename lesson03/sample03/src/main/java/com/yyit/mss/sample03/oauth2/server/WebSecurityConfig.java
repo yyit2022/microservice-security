@@ -22,8 +22,7 @@ public class WebSecurityConfig {
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests(authorizeRequests ->
-                        authorizeRequests.antMatchers("/oauth2/**")
-                                .permitAll()
+                        authorizeRequests
                                 .anyRequest()
                                 .authenticated()
                 )

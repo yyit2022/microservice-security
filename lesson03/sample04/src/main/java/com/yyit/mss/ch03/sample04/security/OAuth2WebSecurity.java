@@ -12,8 +12,6 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableWebFluxSecurity
 public class OAuth2WebSecurity {
 
-
-
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,PermissionAuthorizationManager permissionAuthorizationManager) {
         // @formatter:off

@@ -34,3 +34,44 @@ Content-Type: application/json
 
 ###
 
+curl -v http://localhost:8080/orders \
+-H 'Authorization: Bearer eyJraWQiOiI0MTU1MTQ2OC0zNjUyLTQ4ZTktYjNlMy04OTYyYTRiYTAzZDUiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJvcmRlcnByb2Nlc3NpbmdzZXJ2aWNlIiwiYXVkIjoib3JkZXJwcm9jZXNzaW5nc2VydmljZSIsIm5iZiI6MTY1MTEyOTI5MCwic2NvcGUiOlsicmVhZCIsIm9wZW5pZCIsIndyaXRlIl0sImlzcyI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDg1IiwiZXhwIjoxNjUxMTI5NTkwLCJpYXQiOjE2NTExMjkyOTB9.eZ2Jkwzo10qTVeMPCaJHcQy329bXky1rRcVpQlY6mzqp0EnlGac86CGp2Fz_P1GxYCrvzpqUgO2B26IMd4n2y9D1j-c3wqyndDAw7DdK673YBCpS-7_9Ovgb1q9kON0uvlLGPT4cO91_F0W2Tj6Ar6XyhiZKRmfblEYAKbNhh14-LC8l4dSwEwWtr7JzTTSmEjuFUoD955QBN3uDz3fHXW4TyRgs9zc59MEEXBCqyRETNJIOxRaRPlU-XGryHX8ntKp7UkrwbNRPLo93GUACZ9MMGTaltstbjsCnFmsULXXwam7g3cXm6HY0bqH9bWdJfYSfqkfj4diaHb_XZML7BQ'
+-H 'Content-Type: application/json' \
+--data-binary @- << EOF
+{
+  "items":[
+    {
+      "itemCode":"IT0001",
+      "quantity":3
+    },
+    {
+      "itemCode":"IT0004",
+      "quantity":1
+    }
+  ],
+  "shippingAddress":"福建省厦门市XX区XX街道XX小区XX栋XX室"
+}
+EOF
+###
+
+POST http://localhost:8080/orders
+Content-Type: application/json
+Authorization:  Bearer eyJraWQiOiI1MzA1ZDIxYi0wNWQwLTRkN2EtOTRlZC02YjIwOWZmN2I4NDUiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJvcmRlcnByb2Nlc3NpbmdhcHAiLCJhdWQiOiJvcmRlcnByb2Nlc3NpbmdhcHAiLCJuYmYiOjE2NTY5MDI5MzIsInNjb3BlIjpbInJlYWQiLCJvcGVuaWQiLCJ3cml0ZSJdLCJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6ODA4NSIsImV4cCI6MTY1NjkwMzIzMiwiaWF0IjoxNjU2OTAyOTMyfQ.N8NDB61PbzG6RtC1H_pjRO1ko4BXmAQUfh1jY2WIxRRFG-ZgVPH4RBKAcI4pri1nQ1sb9L6E81xqw-OIneA8VljT9QefxeZ3cVgDmijoIHMYa5nC109AbfzQ1OTPBvU6xHTea0dx77a2hVu7RxbJoM1Bwl0fwn-XDgU_eHCDIt1oAfroRwPgDh6Aslt47xBVWGBxGfH4fiOARzdBPvwX-uMANrOhaflmkZEAjPqsAUuRoRnA8vckLmEcp7BmNIsB1n8ej22KNkANor8V7nx871i1a4-39MnyPGlwvJEO4bZkIKctRM-R1hFCiejmhm5CF50IRVDLZ_McrtDnVA7ZNg
+
+{
+  "items":[
+    {
+      "itemCode":"IT0001",
+      "quantity":3
+    },
+    {
+      "itemCode":"IT0004",
+      "quantity":1
+    }
+  ],
+  "shippingAddress":"福建省厦门市XX区XX街道XX小区XX栋XX室"
+}
+
+###
+
+
