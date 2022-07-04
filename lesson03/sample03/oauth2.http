@@ -1,0 +1,38 @@
+
+http://localhost:8085/oauth2/authorize?client_id=yyit&response_type=code&redirect_uri=https%3A%2F%2Fwww.baidu.com&scope=read
+
+###
+
+# 授权码交换令牌
+POST http://localhost:8085/oauth2/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&code=-jgX4_EprqrLjJN-aoqyoM_v7SCRf3QLvvaWr4gQETQn4xmKwZfdmMzvGXUUdioJpGUF-I9aV8z9vP0-xLPBWhDqFAXD237uDV56osYliBEconpCpiwZ0PcwCbdtPZzMz&client_id=yyit&client_secret=123456&redirect_uri=https%3A%2F%2Fwww.baidu.com
+
+###
+
+# 令牌自省
+
+POST http://localhost:8085/oauth2/introspect
+Content-Type: application/x-www-form-urlencoded
+
+client_id=yyit&client_secret=123456&token=eyJraWQiOiIwYTRiMzM4ZS0wYmYyLTQyNmUtOWJlNi1iYmUyOTdhY2Y2ZmUiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJlcmd1byIsImF1ZCI6Inl5aXQiLCJuYmYiOjE2NTY5MTU0NDAsInNjb3BlIjpbIm9wZW5pZCJdLCJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6ODA4NSIsImV4cCI6MTY1NjkxNTc0MCwiaWF0IjoxNjU2OTE1NDQwfQ.GHfxheOQy24YR60a-6S_v_Xd66vbiLZajQcPfjEdpwuJ9l6C4nWOORUqa_qtDDBHlAXI18c98nM-dVU8AkXxIk9ZykLq2X88nzMXtkBCqlbrqI7h5khM0vyd_e9uM27lQXJdsGnLgXZ36S87v9B0Z-NiZ90TtekvWdHM1qZjhnHjyQyzqJ9uQVl-L3vL9h2U74u-GwVxCVLwAZdNsNhyylYkkAgeFf1Sstx4knMFiO4K6InKcJi3NHdbtiISamZdNwGvYJkpzr6-a-KYrFxgwJpNa-7742Er2ZmBhjZqcpWjtF_aQL3_fRVz66Ez_T7Ps97SPC6neX2YzODIxXyACg
+
+###
+
+# 注销访问令牌
+
+POST http://localhost:8085/oauth2/revoke
+Content-Type: application/x-www-form-urlencoded
+
+client_id=yyit&client_secret=123456&token=eyJraWQiOiI3M2U3OGQ2Ni1iNzM1LTQ1MGItYTc4NS02Y2E2MTNlM2Q5ZmMiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImF1ZCI6Inl5aXQiLCJuYmYiOjE2NDkzMDEzMzIsInNjb3BlIjpbIm9wZW5pZCJdLCJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6OTAwMCIsImV4cCI6MTY0OTMwMTYzMiwiaWF0IjoxNjQ5MzAxMzMyfQ.4niWt5zsQlbDI6fCoAzMIpIoF6_zuTPhIalgrHI229Na1K89bDpsetoTDIPYwAIcD35TB6tYz5S2Rc0HQSKvSH_MXyT2Q2_1cL8G7ov0VrckyImsV8PbUJ4NsZ3r-JXhykYnZdkEgEw2gBapy2cNyvMka_JgR-QndM0lhLFWwJC_NcyGQz-7RaYjSBu6GzQmDq6rD4BJuWy6UKXj85jzIypbTF5dv1nScQXGTc9xDeWjqP0JN0tKj8vsIDdCtZjBTJemhxsgLW-TZcNq85yvIcgv3om6lqwpXwEDH3EbPz73E_WsMyFNFidTfP1F3tFl3lXp9iCPqQvv5Sk6w2mWpw
+
+###
+
+
+# 使用客户端凭证授权模式
+POST http://localhost:8085/oauth2/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id=yyit&client_secret=123456
+###
