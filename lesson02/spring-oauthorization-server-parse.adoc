@@ -1,0 +1,98 @@
+= spring-oauthorization-server 分析
+
+== 核心过滤链分析
+
+OAuth2方案，支持在单体应用下启用。在单体应用中使用时，该应用的角色将会同时为 “授权服务器” 和 “资源服务器”。
+
+单体应用下，应用会同时成为 “授权服务器” 和 “资源服务器”。
+分别对应两条由 Spring Security 创建的过滤器链，用于处理授权请求和资源服务的鉴权安全。
+
+=== 授权服务器 `SecurityFilterChain` 过滤链
+
+配置类 `OAuth2AuthorizationServerConfiguration`
+
+
+image::doc/c.1.png[]
+
+该过滤器链,会匹配下图的 URL 和 Method 的请求。
+
+
+
+image::doc/c.3.png[]
+
+在授权服务器的配置类生效后，将会对上图中的符合的 URL 和 Method 的请求进行拦截，也就是说，只要请求符合，都会进入这个过滤器链中被处理。
+
+==== OAuth2AuthorizationEndpointFilter
+
+这个过滤器用来处理授权码认证过程中获取 `code` 的请求。
+
+```
+http://{{AuthorizationServer}}/oauth2/authorize?client_id=client&response_type=code&redirect_uri={{callback-url}}&scope=openid
+```
+
+若请求成功,返回的302跳转路径是:
+
+```
+http://localhost:8080/callback/?code=Uuc0JvgXYHo93Z1Zxt3Zu8iW29OQFMEDy2Gi9FV754WYWcpOg6N3xF5CR0vYGSbXmsNXN55gzXmlN3BcC9YPeQu_ijY2GNM68qf_S3OjJtbJhl6uQlxciq8KLyYGlxy4
+```
+
+这样，就能获取到授权码,进行下一步的认证了。
+
+==== OAuth2ClientAuthenticationFilter
+
+客户端认证过滤器，主要是对请求的客户端进行认证。无论 grant type 是授权码还是客户端认证，请求中都会包含 client id 和 client secret。此过滤器就是确认客户端的 client id 和 client secret 是否正确。
+
+与其他过滤器不同，如果客户端认证成功，会把客户端信息转为 Authentication 对象，保存在 SecurityContext 中，然后流转到下一个过滤器。
+
+==== OAuth2TokenEndpointFilter
+
+处理不同 Grant Type，并真正颁发 Token (AccessToken 和 RefreshToken)的过滤器。这个过滤器是颁发的核心，并且处理的事情比较复杂,在后面从流程介绍时再进一步说明。
+
+
+==== OAuth2TokenIntrospectionEndpointFilter
+
+授权服务器会颁发 Token，同时，也负责要验证颁发出的 Token 的有效性。此过滤器被调用用于确认 Token 的有效性，Token 有效则返回属于这个Token的一些认证授权信息。
+
+```
+http://{{AuthorizationServer}}/oauth2/introspect?token={{AccessToken}}
+```
+
+==== OAuth2TokenRevocationEndpointFilter
+
+负责 Token 的注销
+```
+http://{{AuthorizationServer}}/oauth2/revoke?token={{AccessToken}}
+```
+
+=== 资源服务器 `SecurityFilterChain` 过滤链
+
+除授权服务器拦截的 url 外，其他任意请求都进资源服务器配置类的过滤器链。
+注意，任意请求的意思，也就是所有请求都要经过这里进行安全的鉴权和控制。
+这就是在 OAuth2 方案下进行鉴权的关键过滤器链了。
+
+image::doc/c.4.png[]
+
+这个过滤器链，与传统（单体）应用下的过滤器链中的过滤器类(数量顺序）基本上是一致的。除了在资源服务器下新增的 `BearerTokenAuthenticationFilter` 过滤器。
+
+==== BearerTokenAuthenticationFilter
+
+在资源服务器的角度下，任何请求都需要验证该请求的有效性。
+请求中必须要附上 Token，那 Token 会经过此过滤器，
+调用认证管理器 `AuthenticationManager` 来对此 Token 进行校验（一般校验流程与上述授权服务器的 `OAuth2TokenIntrospectionEndpointFilter` 一致)。
+
+成功后，则把校验成功的信息存储在 SecurityContext 中，然后转到下一步的过滤器进行鉴权。
+
+
+== 授权模式
+
+=== 客户端凭证
+
+.hello
+[plantuml,hello.png]
+--
+Bob->Alice : hello
+--
+
+
+
+
