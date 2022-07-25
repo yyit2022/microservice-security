@@ -87,11 +87,69 @@ image::doc/c.4.png[]
 
 === 客户端凭证
 
-.hello
-[plantuml,hello.png]
---
-Bob->Alice : hello
---
+==== 获取访问token
+
+===== 请求响应说明
+
+.请求格式:
+|===
+|名称 |说明
+
+|url
+|/oauth2/token
+
+|Method
+|POST
+
+|Content-Type
+|application/x-www-form-urlencoded
+
+|Authorization
+|格式为:Basic 。为 base64 编码的 {client_id}:{client_secret}。
+|===
+
+
+.请求参数
+|===
+|名称 |说明
+
+|grant_type
+|必填,固定为 `client_credentials`
+
+|scope
+|可选，权限范围
+|===
+
+
+.响应
+|===
+|名称 |说明
+
+|access_token
+|访问 token，格式为 jwt
+
+|scope
+|申请并获得授权的scope
+
+|token_type
+|token 的类型。固定值 Bearer
+
+|expires_in
+|访问 token 有效期,单位为秒
+|===
+
+客户端凭据，根据 OAuth2 规范，不会返回 refresh_token。因此，如果 token 过期，则重新发起申请获取一次就可以了。
+
+.示例
+```bash
+POST http://localhost:8085/oauth2/token
+Authorization: Basic b3JkZXJwcm9jZXNzaW5nc2VydmljZTpvcmRlcnByb2Nlc3NpbmdzZXJ2aWNlc2VjcmV0
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials
+```
+
+
 
 
 

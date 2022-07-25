@@ -1,0 +1,10 @@
+server:
+  port: 8081
+
+keycloak:
+  auth-server-url: http://localhost:8080/auth
+  realm: keycloak-vue-auth
+  ssl-required: external
+  resource: app-myapp
+  bearer-only: true
+  public-client: true

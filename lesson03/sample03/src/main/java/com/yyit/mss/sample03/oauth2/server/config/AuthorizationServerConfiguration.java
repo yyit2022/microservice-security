@@ -1,9 +1,10 @@
-package com.yyit.mss.sample03.oauth2.server;
+package com.yyit.mss.sample03.oauth2.server.config;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -16,6 +17,8 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenCustomizer;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -23,6 +26,7 @@ import org.springframework.security.oauth2.server.authorization.config.ClientSet
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.security.oauth2.server.authorization.config.TokenSettings;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -41,10 +45,16 @@ import java.util.UUID;
  **/
 @Configuration
 public class AuthorizationServerConfiguration {
+
+
+    @Autowired
+    private CorsConfigurationSource configurationSource;
+
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+        http.cors().configurationSource(configurationSource);
         http.httpBasic();
         return http.formLogin(Customizer.withDefaults()).build();
     }
@@ -62,6 +72,9 @@ public class AuthorizationServerConfiguration {
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .redirectUri("https://www.baidu.com")
+                .redirectUri("http://127.0.0.1:3000/callback/")
+                .redirectUri("http://localhost:3000/auth/signinwin/main")
+                .redirectUri("http://localhost:5050/oidc-popup-callback")
                 .scope(OidcScopes.OPENID)
                 .scope("read")
                 .scope("write")
@@ -82,11 +95,14 @@ public class AuthorizationServerConfiguration {
                 .clientId("yyit")
                 .clientSecret(encoder.encode("123456"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 // unavailable
                 .redirectUri("https://oidcdebugger.com/debug")
                 .redirectUri("https://www.baidu.com")
+                .redirectUri("http://localhost:3000/callback")
                 .scope(OidcScopes.OPENID)
                 .scope("read")
                 .scope("write")

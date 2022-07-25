@@ -1,0 +1,44 @@
+remote:
+  home: http://localhost:8085
+
+server:
+  port: 9000
+
+spring:
+  application:
+    name: api-gateway
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          jwk-set-uri: http://localhost:8085/auth/realms/keycloak-vue-auth/protocol/openid-connect/certs
+  cloud:
+    gateway:
+      routes:
+        - id: ms-one
+          uri: http://localhost:8082/
+          predicates:
+            - Path=/v1/one/**
+          filters:
+            - RewritePath=/v1/one/(?<segment>.*),/api/one/$\{segment}
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+      cors:
+        allowed-origins: true
+
+secure:
+  ignore:
+    urls:
+      - /unsecured
+      - /v1/one/open
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: DEBUG

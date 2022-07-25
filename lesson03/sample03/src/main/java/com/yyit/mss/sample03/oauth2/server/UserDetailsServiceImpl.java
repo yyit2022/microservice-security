@@ -22,8 +22,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         users = new HashMap<>();
 
         User erguo = new User("erguo", "erguo123", new String[]{"buyer", "seller", "priv-buyer"});
+        User yyit = new User("yyit", "123456", new String[]{"buyer", "seller", "priv-buyer"});
 
         users.put(erguo.getUsername(), erguo);
+        users.put(yyit.getUsername(),yyit);
+
     }
 
 

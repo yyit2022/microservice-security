@@ -1,15 +1,21 @@
-= 订单处理微服务
-:author: yyit
-:stem: latexmath
-:icons: font
-:source-highlighter: coderay
-:sectlinks:
-:sectnumlevels: 4
-:toc: left
-:toc-title: 目录
-:toclevels: 3
+Writing Documentation using AsciiDoc3
+====================================
+Joe Bloggs <jbloggs@mymail.com>
+v2.0, February 2003:
+Rewritten for version 2 release.
+
+__unconstrained emphasized text__
+**unconstrained strong text**
+++unconstrained monospaced text++
+##unconstrained unquoted text##
 
 
 
+.Notes
+- Note 1.
+- Note 2.
 
+
+[icons=None, caption="My Special Note"]
+NOTE: This is my special note.
 

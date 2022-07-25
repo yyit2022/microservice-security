@@ -1,5 +1,13 @@
 
-http://localhost:8085/oauth2/authorize?client_id=yyit&response_type=code&redirect_uri=https%3A%2F%2Fwww.baidu.com&scope=read
+POST http://localhost:8085/oauth2/token
+Authorization: Basic b3JkZXJwcm9jZXNzaW5nc2VydmljZTpvcmRlcnByb2Nlc3NpbmdzZXJ2aWNlc2VjcmV0
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials
+###
+
+
+http://localhost:8085/oauth2/authorize?client_id=orderprocessingapp&response_type=code&redirect_uri=https%3A%2F%2Fwww.baidu.com&scope=read write
 
 ###
 
@@ -7,7 +15,7 @@ http://localhost:8085/oauth2/authorize?client_id=yyit&response_type=code&redirec
 POST http://localhost:8085/oauth2/token
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=authorization_code&code=-jgX4_EprqrLjJN-aoqyoM_v7SCRf3QLvvaWr4gQETQn4xmKwZfdmMzvGXUUdioJpGUF-I9aV8z9vP0-xLPBWhDqFAXD237uDV56osYliBEconpCpiwZ0PcwCbdtPZzMz&client_id=yyit&client_secret=123456&redirect_uri=https%3A%2F%2Fwww.baidu.com
+grant_type=authorization_code&code=mKcz-3c8MV3oYQnmkRyoJIRQQQJaemt0vp0KzOb3VvEqgPoXpZKdQTn6kg23LV05NeaAXnHx-FYWQ8siqIpDKQBvE7pFmTzNvC0kgnMpwiTNvMAIP7xuk19mdIVBrRe8&client_id=yyit&client_secret=123456&redirect_uri=https%3A%2F%2Fwww.baidu.com
 
 ###
 
@@ -19,6 +27,16 @@ Content-Type: application/x-www-form-urlencoded
 client_id=yyit&client_secret=123456&token=eyJraWQiOiIwYTRiMzM4ZS0wYmYyLTQyNmUtOWJlNi1iYmUyOTdhY2Y2ZmUiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJlcmd1byIsImF1ZCI6Inl5aXQiLCJuYmYiOjE2NTY5MTU0NDAsInNjb3BlIjpbIm9wZW5pZCJdLCJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6ODA4NSIsImV4cCI6MTY1NjkxNTc0MCwiaWF0IjoxNjU2OTE1NDQwfQ.GHfxheOQy24YR60a-6S_v_Xd66vbiLZajQcPfjEdpwuJ9l6C4nWOORUqa_qtDDBHlAXI18c98nM-dVU8AkXxIk9ZykLq2X88nzMXtkBCqlbrqI7h5khM0vyd_e9uM27lQXJdsGnLgXZ36S87v9B0Z-NiZ90TtekvWdHM1qZjhnHjyQyzqJ9uQVl-L3vL9h2U74u-GwVxCVLwAZdNsNhyylYkkAgeFf1Sstx4knMFiO4K6InKcJi3NHdbtiISamZdNwGvYJkpzr6-a-KYrFxgwJpNa-7742Er2ZmBhjZqcpWjtF_aQL3_fRVz66Ez_T7Ps97SPC6neX2YzODIxXyACg
 
 ###
+
+# 刷新 token
+POST http://localhost:8085/oauth2/token
+Authorization: Basic eXlpdDoxMjM0NTY=
+Content-Type: application/x-www-form-urlencoded
+
+refresh_token=o3gMVshejniz1cO_I4vNOJSDWWFYB5JVuOEStdvdFLdG20t4vz9rBrqLk0Z9jEfL_f6gEiYsUO8MECLZiWHwiGbsM4YpMUmv3yC7SBy8SG8W-wIynF_rw6xa6dIqYbGh&grant_type=refresh_token
+
+###
+
 
 # 注销访问令牌
 
@@ -36,3 +54,12 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=client_credentials&client_id=yyit&client_secret=123456
 ###
+
+
+
+
+
+http://localhost:8085/oauth2/authorize?client_id=orderprocessingapp&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&scope=read write
+###
+
+

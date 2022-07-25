@@ -1,0 +1,17 @@
+
+# ####################### 密码模式 ######################
+##获取token
+POST  http://localhost:8085/auth/realms/keycloak-vue-auth/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=vue-auth&username=yanpingping&password=123456
+
+###
+
+## 刷新token
+POST  http://localhost:8080/auth/realms/keycloak-vue-auth/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&client_id=vue-auth&refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI4ZGU4ZTEzNy0yMTY5LTRlZWQtYmQ3Ny0yODRkODFjNGRhNDcifQ.eyJleHAiOjE2NTg0NzExODEsImlhdCI6MTY1ODQ2OTM4MSwianRpIjoiNTRmNjYwMDctYmNjZi00YjViLWFiZWQtZjNmMDMwYWE5MWVmIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL2F1dGgvcmVhbG1zL2tleWNsb2FrLXZ1ZS1hdXRoIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL2F1dGgvcmVhbG1zL2tleWNsb2FrLXZ1ZS1hdXRoIiwic3ViIjoiNGIxYjM5NGYtNzJjNy00MjRiLTg0NjUtOTM4M2YxN2RiMzliIiwidHlwIjoiUmVmcmVzaCIsImF6cCI6InZ1ZS1hdXRoIiwic2Vzc2lvbl9zdGF0ZSI6ImRkM2Y1ZDI5LWY5YTMtNGFmMi1iOTc1LTgzNDlkNzQ0MDIxMiIsInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6ImRkM2Y1ZDI5LWY5YTMtNGFmMi1iOTc1LTgzNDlkNzQ0MDIxMiJ9.DtP4FVqfdYJYAVOVfi8JHfoARFHH6nc44TEuFzrNbgU
+
+###
